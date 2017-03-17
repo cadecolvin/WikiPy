@@ -44,13 +44,13 @@ class WikiClient():
         # Next, login again passing the token
         r = requests.post(self.url, data=payload, cookies=self.cookies)
 
-    def get_page_text(self, page_title):
+    def get_page_text(self, page_id):
         """
-        Returns the full markup of the requested page.
+        Returns the full text of the requested page.
         """
         payload = {'action':'query',
                    'format':'json',
-                   'titles':page_title,
+                   'pageids':page_id,
                    'prop':'revisions',
                    'rvprop':'content'}
 
@@ -59,7 +59,27 @@ class WikiClient():
             raise Exception
 
         response = r.json()
-        pages = response['query']['pages']
-        page_ids = list(pages.keys())
-        page_text = pages[page_ids[0]]['revisions'][0]['*']
-        return page_text
+        page = response['query']['pages'][str(page_id)]
+        return page['revisions'][0]['*']
+
+    def get_category_pages(self, category_name):
+        """
+        Returns all page titles that fall under the specified category
+        """
+        payload = {'action':'query',
+                   'format':'json',
+                   'list':'categorymembers',
+                   'cmtitle':'Category:' + category_name,
+                   'cmlimit':'500'}
+
+        r = requests.post(self.url, data=payload, cookies=self.cookies)
+        if r.status_code != 200:
+            raise Exception
+
+        response = r.json()
+        members = response['query']['categorymembers']
+        pages = []
+        for page in members:
+            pages.append((page['pageid'], page['title']))
+
+        return pages
