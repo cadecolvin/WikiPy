@@ -2,9 +2,6 @@ import json
 import requests
 
 
-__version__ = '0.1'
-
-
 class WikiClient():
     """
     WikiClient is a wrapper around the MediaWiki API. It should be the only
